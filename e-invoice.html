@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts - saer.pk</title>
+
+    <!-- Google Fonts: Montserrat for headings, Inter for clean body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#1a4484',      // Saer/Sastaticket Blue
+                        textdark: '#374151',   // Dark Gray Text
+                        textlight: '#6b7280',  // Light Gray Text
+                        sectionbg: '#f8fafc',  // Very soft gray for blocks
+                        sectiontitle: '#5a7694'// Blue-gray for section headers
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Exact A4 and Print Styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .a4-page {
+                width: 100% !important;
+                max-width: 210mm !important;
+                min-height: 297mm !important;
+                margin: 0 auto !important;
+                padding: 12mm 15mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                page-break-after: always;
+            }
+
+            .print-hidden {
+                display: none !important;
+            }
+        }
+
+        .a4-page {
+            width: 100%;
+            max-width: 794px;
+            min-height: 1123px;
+            background: white;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans text-[10px] sm:text-[11px] text-textdark min-h-screen sm:py-6 sm:px-4">
+
+    <!-- Invoice Toggle Controls (Hidden on Print) -->
+    <div
+        class="print-hidden w-full max-w-[794px] mx-auto bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-6 flex flex-wrap items-center justify-center gap-3">
+        <span class="font-heading font-semibold text-sectiontitle text-[11px] mr-2">Select Invoice View:</span>
+        <button id="btn-flight" onclick="showInvoice('flight')"
+            class="bg-brand text-white px-5 py-2 rounded text-[11px] font-bold transition-all">Flight Ticket
+            Invoice</button>
+        <button id="btn-umrah" onclick="showInvoice('umrah')"
+            class="bg-white text-brand border border-brand px-5 py-2 rounded text-[11px] font-bold hover:bg-gray-50 transition-all">Umrah
+            Booking Invoice</button>
+    </div>
+
+    <!-- ================= INVOICE 1: FLIGHT TICKET ================= -->
+    <div id="invoice-flight" class="a4-page flex-col p-4 sm:p-8 overflow-hidden flex relative">
+
+        <!-- Background "PAID" Watermark -->
+        <div
+            class="absolute inset-0 z-0 pointer-events-none flex items-center justify-center select-none opacity-[0.03]">
+            <span
+                class="text-emerald-600 font-heading font-black text-[10rem] sm:text-[15rem] -rotate-[35deg] tracking-[0.1em]">PAID</span>
+        </div>
+
+        <!-- Header Section -->
+        <div class="flex justify-between items-start mb-2 relative z-10">
+            <div class="pt-1">
+                <h1 class="font-heading font-light text-[26px] sm:text-[28px] text-gray-800 leading-none">Receipt</h1>
+                <p class="text-textlight mt-1.5 text-[9px]">Date : 16 Apr 2026, 03:58 PKT (Thursday)</p>
+            </div>
+
+            <!-- Logo & Company Name Container -->
+            <div class="flex flex-col items-end">
+                <div
+                    class="bg-brand text-white px-4 py-1.5 rounded-bl-[16px] rounded-tl-sm -mr-4 sm:-mr-8 flex items-center justify-center shadow-sm">
+                    <span class="font-heading font-bold text-base tracking-tight">saer.pk</span>
+                </div>
+                <div
+                    class="text-[7px] sm:text-[8px] text-textlight font-semibold uppercase tracking-wider text-right mt-2">
+                    Saer Karo Travel And Tours SMC Pvt Limited
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Banner -->
+        <div
+            class="bg-[#fffbeb] border border-[#fef3c7] text-[#b45309] px-3 py-1.5 flex items-center gap-2 mb-2 font-semibold text-[9px] rounded-sm relative z-10">
+            <div
+                class="w-3 h-3 rounded-full bg-[#b45309] text-white flex items-center justify-center font-bold text-[8px] shrink-0">
+                !</div>
+            THIS IS NOT THE E-TICKET!
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            CUSTOMER DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Name</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Ahsan Raza</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Email</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">ahsaan.raza.butt@gmail.com</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Contact Number</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">+923000709017</div>
+            </div>
+        </div>
+
+        <!-- PAYMENT DETAILS (Top) -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PAYMENT DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Order ID</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">2460276</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Method</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Bank Transfer - 1 bill</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Status</div>
+                <div class="w-[65%] sm:w-[75%] text-emerald-600 font-semibold text-[10px] uppercase tracking-wide">PAID
+                </div>
+            </div>
+        </div>
+
+        <!-- FLIGHT DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            FLIGHT DETAILS</h2>
+        <div class="w-full relative z-10 px-1">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-sectionbg">
+                    <tr>
+                        <th class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[20%] rounded-l-sm">Outbound
+                            Flight</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[30%]">Depart</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[30%]">Arrive</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[10%]">Class</th>
+                        <th
+                            class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[10%] text-right rounded-r-sm">
+                            Flight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">LHE-JED</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">09 Jul 2026 09:50</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">09 Jul 2026 13:30</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">Economy</td>
+                        <td class="py-3 px-4 text-gray-800 text-[10px] text-right">PF-716</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PASSENGER DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PASSENGER DETAILS</h2>
+        <div class="w-full relative z-10 px-1">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-sectionbg">
+                    <tr>
+                        <th class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[50%] rounded-l-sm">Passenger
+                            Name</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[30%]">Date Of Birth</th>
+                        <th class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[20%] rounded-r-sm">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="uppercase border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">SAMAN IBRAR</td>
+                        <td class="py-3 px-2 text-gray-600 text-[10px]">18 OCT 1993</td>
+                        <td class="py-3 px-4 text-gray-600 text-[10px]">ADULT</td>
+                    </tr>
+                    <tr class="uppercase border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">IBRAR MARYAM</td>
+                        <td class="py-3 px-2 text-gray-600 text-[10px]">18 SEP 1997</td>
+                        <td class="py-3 px-4 text-gray-600 text-[10px]">ADULT</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAYMENT DETAILS (Bottom) -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PAYMENT DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Payment Method</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Bank Transfer - 1 bill</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Order Total</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">PKR 121,112</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Amount Paid</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-900 font-bold text-[10px]">PKR 121,112</div>
+            </div>
+        </div>
+
+        <!-- Receipt Footer / Support -->
+        <div
+            class="mt-auto border-t border-gray-200 pt-5 pb-2 flex flex-row justify-between items-end gap-4 relative z-10">
+            <!-- Support Grouped Together -->
+            <div class="flex flex-col sm:flex-row gap-6 sm:gap-12 items-start sm:items-end justify-end ml-auto">
+                <!-- Phone / WhatsApp -->
+                <div class="flex flex-col text-left mb-2 sm:mb-0">
+                    <span class="text-sectiontitle text-[10px] mb-0.5">Customer Support / WhatsApp</span>
+                    <span class="font-sans font-medium text-brand text-[14px] tracking-wide">+92300-0701506</span>
+                </div>
+                <!-- Email -->
+                <div class="flex flex-col text-left">
+                    <span class="text-sectiontitle text-[10px] mb-0.5">Customer Support Email</span>
+                    <span class="font-sans font-medium text-brand text-[14px] tracking-wide">support@saer.pk</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= INVOICE 2: UMRAH BOOKING ================= -->
+    <div id="invoice-umrah" class="a4-page flex-col p-4 sm:p-8 overflow-hidden relative" style="display: none;">
+
+        <!-- Background "PAID" Watermark -->
+        <div
+            class="absolute inset-0 z-0 pointer-events-none flex items-center justify-center select-none opacity-[0.03]">
+            <span
+                class="text-emerald-600 font-heading font-black text-[10rem] sm:text-[15rem] -rotate-[35deg] tracking-[0.1em]">PAID</span>
+        </div>
+
+        <!-- Header Section -->
+        <div class="flex justify-between items-start mb-2 relative z-10">
+            <div class="pt-1">
+                <h1 class="font-heading font-light text-[26px] sm:text-[28px] text-gray-800 leading-none">Receipt</h1>
+                <p class="text-textlight mt-1.5 text-[9px]">Date : 16 Apr 2026, 03:58 PKT (Thursday)</p>
+            </div>
+
+            <!-- Logo & Company Name Container -->
+            <div class="flex flex-col items-end">
+                <div
+                    class="bg-brand text-white px-4 py-1.5 rounded-bl-[16px] rounded-tl-sm -mr-4 sm:-mr-8 flex items-center justify-center shadow-sm">
+                    <span class="font-heading font-bold text-base tracking-tight">saer.pk</span>
+                </div>
+                <div
+                    class="text-[7px] sm:text-[8px] text-textlight font-semibold uppercase tracking-wider text-right mt-2">
+                    Saer Karo Travel And Tours SMC Pvt Limited
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Banner -->
+        <div
+            class="bg-[#fffbeb] border border-[#fef3c7] text-[#b45309] px-3 py-1.5 flex items-center gap-2 mb-2 font-semibold text-[9px] rounded-sm relative z-10">
+            <div
+                class="w-3 h-3 rounded-full bg-[#b45309] text-white flex items-center justify-center font-bold text-[8px] shrink-0">
+                i</div>
+            THIS IS A PACKAGE RECEIPT, NOT THE FINAL VISA!
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            CUSTOMER DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Name</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Ahsan Raza</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Email</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">ahsaan.raza.butt@gmail.com</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Contact Number</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">+923000709017</div>
+            </div>
+        </div>
+
+        <!-- PAYMENT DETAILS (Top) -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PAYMENT DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Order ID</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">UM-88204</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Method</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Bank Transfer - 1 bill</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Status</div>
+                <div class="w-[65%] sm:w-[75%] text-emerald-600 font-semibold text-[10px] uppercase tracking-wide">PAID
+                </div>
+            </div>
+        </div>
+
+        <!-- PACKAGE DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PACKAGE DETAILS</h2>
+        <div class="w-full relative z-10 px-1">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-sectionbg">
+                    <tr>
+                        <th class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[30%] rounded-l-sm">Package
+                            Name</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[15%]">Duration</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[15%]">Visa Type</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[20%]">Makkah Hotel</th>
+                        <th
+                            class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[20%] text-right rounded-r-sm">
+                            Madinah Hotel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">15 Days Economy Umrah</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">14 Nights</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">Umrah Visa</td>
+                        <td class="py-3 px-2 text-gray-800 text-[10px]">Emaar Al Khalil</td>
+                        <td class="py-3 px-4 text-gray-800 text-[10px] text-right">Al Eiman Taibah</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PILGRIM DETAILS -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PILGRIM DETAILS</h2>
+        <div class="w-full relative z-10 px-1">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-sectionbg">
+                    <tr>
+                        <th class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[50%] rounded-l-sm">Pilgrim
+                            Name</th>
+                        <th class="py-2.5 px-2 font-medium text-sectiontitle text-[10px] w-[30%]">Passport No.</th>
+                        <th
+                            class="py-2.5 px-4 font-medium text-sectiontitle text-[10px] w-[20%] rounded-r-sm text-right">
+                            Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="uppercase border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">SAMAN IBRAR</td>
+                        <td class="py-3 px-2 text-gray-600 text-[10px]">AB1234567</td>
+                        <td class="py-3 px-4 text-gray-600 text-[10px] text-right">ADULT</td>
+                    </tr>
+                    <tr class="uppercase border-b border-gray-100">
+                        <td class="py-3 px-4 text-gray-800 text-[10px]">IBRAR MARYAM</td>
+                        <td class="py-3 px-2 text-gray-600 text-[10px]">XY9876543</td>
+                        <td class="py-3 px-4 text-gray-600 text-[10px] text-right">ADULT</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAYMENT DETAILS (Bottom) -->
+        <h2
+            class="uppercase font-heading font-semibold text-sectiontitle text-[9px] sm:text-[10px] mb-1.5 tracking-wider mt-5 relative z-10">
+            PAYMENT DETAILS</h2>
+        <div class="w-full bg-sectionbg rounded-sm py-3 px-4 relative z-10">
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Payment Method</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">Bank Transfer - 1 bill</div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Order Total</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-800 text-[10px]">PKR 350,000</div>
+            </div>
+            <div class="flex">
+                <div class="w-[35%] sm:w-[25%] text-sectiontitle font-medium text-[10px]">Amount Paid</div>
+                <div class="w-[65%] sm:w-[75%] text-gray-900 font-bold text-[10px]">PKR 350,000</div>
+            </div>
+        </div>
+
+        <!-- Receipt Footer / Support -->
+        <div
+            class="mt-auto border-t border-gray-200 pt-5 pb-2 flex flex-row justify-between items-end gap-4 relative z-10">
+            <!-- Support Grouped Together -->
+            <div class="flex flex-col sm:flex-row gap-6 sm:gap-12 items-start sm:items-end justify-end ml-auto">
+                <!-- Phone / WhatsApp -->
+                <div class="flex flex-col text-left mb-2 sm:mb-0">
+                    <span class="text-sectiontitle text-[10px] mb-0.5">Customer Support / WhatsApp</span>
+                    <span class="font-sans font-medium text-brand text-[14px] tracking-wide">+92300-0701506</span>
+                </div>
+                <!-- Email -->
+                <div class="flex flex-col text-left">
+                    <span class="text-sectiontitle text-[10px] mb-0.5">Customer Support Email</span>
+                    <span class="font-sans font-medium text-brand text-[14px] tracking-wide">support@saer.pk</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for Toggling Invoices -->
+    <script>
+        function showInvoice(type) {
+            const flightInvoice = document.getElementById('invoice-flight');
+            const umrahInvoice = document.getElementById('invoice-umrah');
+            const btnFlight = document.getElementById('btn-flight');
+            const btnUmrah = document.getElementById('btn-umrah');
+
+            if (type === 'flight') {
+                flightInvoice.style.display = 'flex';
+                umrahInvoice.style.display = 'none';
+
+                btnFlight.className = 'bg-brand text-white px-5 py-2 rounded text-[11px] font-bold transition-all';
+                btnUmrah.className = 'bg-white text-brand border border-brand px-5 py-2 rounded text-[11px] font-bold hover:bg-gray-50 transition-all';
+            } else {
+                flightInvoice.style.display = 'none';
+                umrahInvoice.style.display = 'flex';
+
+                btnUmrah.className = 'bg-brand text-white px-5 py-2 rounded text-[11px] font-bold transition-all';
+                btnFlight.className = 'bg-white text-brand border border-brand px-5 py-2 rounded text-[11px] font-bold hover:bg-gray-50 transition-all';
+            }
+        }
+    </script>
+</body>
+
+</html>

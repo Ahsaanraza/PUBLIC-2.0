@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Ticket - saer.pk</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Eczar:wght@800;900&family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#0B1A28',      // Primary Navy
+                        action: '#1a4484',     // Action Blue
+                        highlight: '#1e3a8a',  // Active Highlight
+                        borderline: '#e2e8f0', // Border / Stroke
+                        muted: '#64748b',      // Muted Text
+                        lightbg: '#f8fafc'     // Light background for headers
+                    },
+                    fontFamily: {
+                        logo: ['Eczar', 'serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Exact A4 and Print Styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #a4-container {
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .print-hidden {
+                display: none !important;
+            }
+
+            .print-exact {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        /* Smooth fade for transitions */
+        .flight-group {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-100 font-body text-[11px] md:text-[12px] text-brand min-h-screen sm:py-4 sm:px-4 flex flex-col items-center print-exact">
+
+    <div
+        class="print-hidden w-full sm:max-w-[794px] bg-white rounded-lg shadow-sm border border-borderline p-2 mb-3 flex flex-col sm:flex-row items-center justify-between gap-2 z-50">
+        <div class="flex items-center gap-2 px-2">
+            <i data-lucide="layout-template" class="w-4 h-4 text-action"></i>
+            <span class="font-heading font-bold text-[11px] text-brand whitespace-nowrap">Ticket Viewer</span>
+        </div>
+        <div class="flex flex-wrap justify-end gap-1.5">
+            <button id="btn-oneway" onclick="setTripType('oneway')"
+                class="px-3 py-1 rounded bg-action text-white text-[10px] font-bold transition-colors">One Way
+                (Direct)</button>
+            <button id="btn-connecting" onclick="setTripType('connecting')"
+                class="px-3 py-1 rounded bg-gray-100 text-brand hover:bg-gray-200 text-[10px] font-bold transition-colors">Connecting
+                (1 Stop)</button>
+            <button id="btn-connecting2" onclick="setTripType('connecting2')"
+                class="px-3 py-1 rounded bg-gray-100 text-brand hover:bg-gray-200 text-[10px] font-bold transition-colors">Connecting
+                (2 Stops)</button>
+            <button id="btn-return" onclick="setTripType('return')"
+                class="px-3 py-1 rounded bg-gray-100 text-brand hover:bg-gray-200 text-[10px] font-bold transition-colors">Return</button>
+            <button id="btn-multicity" onclick="setTripType('multicity')"
+                class="px-3 py-1 rounded bg-gray-100 text-brand hover:bg-gray-200 text-[10px] font-bold transition-colors">Multi-City</button>
+        </div>
+    </div>
+
+    <!-- Container locked to A4 width/height ratio on desktop, allowing empty space at bottom -->
+    <div id="a4-container"
+        class="w-full sm:max-w-[794px] sm:min-h-[1123px] bg-white sm:shadow-sm relative border-0 sm:border border-borderline flex flex-col p-4 sm:p-5 overflow-hidden">
+
+        <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="flex flex-col">
+                <h1 class="font-heading font-bold text-[28px] sm:text-[32px] text-brand leading-none">E-ticket</h1>
+                <p id="trip-type-label" class="text-muted text-[12px] sm:text-[13px] font-medium leading-none mt-2">
+                    Oneway Trip</p>
+                <p class="text-muted text-[10px] sm:text-[11px] italic leading-none mt-1.5">Below are the details of
+                    your electronic ticket. Note: All timing are local.</p>
+            </div>
+            <div class="flex flex-col items-end mt-0.5">
+                <div class="font-logo font-black text-[28px] sm:text-[32px] text-action leading-none tracking-tight">
+                    saer.pk
+                </div>
+                <div class="text-[8px] sm:text-[10px] text-muted font-medium uppercase tracking-wider text-right mt-2">
+                    SAER KARO TRAVEL AND TOURS SMC PVT LIMITED
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-end gap-x-6 gap-y-2 mb-4 pt-3 border-t border-borderline relative z-10">
+            <div>
+                <p class="text-[10px] text-muted font-medium mb-1 leading-none">PNR</p>
+                <p class="font-heading font-bold text-brand text-[13px] leading-none">10FS24</p>
+            </div>
+            <div>
+                <p class="text-[10px] text-muted font-medium mb-1 leading-none">Booking No</p>
+                <p class="font-heading font-bold text-brand text-[13px] leading-none">CLI_21286-2241088</p>
+            </div>
+            <!-- Dynamic Refundable/Non-Refundable Badge -->
+            <div id="refund-badge"
+                class="bg-[#f0fdf4] border border-[#86efac] text-[#166534] px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                Refundable
+            </div>
+        </div>
+
+        <div class="mb-3 relative z-10">
+
+            <!-- 1. ONE WAY (WITHOUT STAY) -->
+            <div id="flights-oneway" class="flight-group block">
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="calendar" class="w-3 h-3 text-muted"></i> 20 Apr (Saturday)
+                        </div>
+                        <div class="text-muted font-medium text-[8px] uppercase tracking-wider">Departure Flight
+                            (Direct)</div>
+                    </div>
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-red-600 text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                AA</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Air Arabia</p>
+                                <p class="text-[9px] text-muted mt-0.5">3L-316 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy
+                                        (E)</span></p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">11:00</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Faisalabad (LYP)</p>
+                                <p class="text-[8px] text-muted">Terminal - NA</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">2h
+                                    15m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                                <span class="text-[8px] text-action font-semibold mt-0.5">Non-Stop</span>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">13:15</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Abu Dhabi (AUH)</p>
+                                <p class="text-[8px] text-muted">Terminal A</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">10FS24</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">Pending issuance</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">20KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CONNECTING (WITH STAY) -->
+            <div id="flights-connecting" class="flight-group hidden">
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="calendar" class="w-3 h-3 text-muted"></i> 25 May (Saturday)
+                        </div>
+                        <div class="text-muted font-medium text-[8px] uppercase tracking-wider">Departure Flight (1
+                            Stop)</div>
+                    </div>
+
+                    <!-- Flight Segment 1 -->
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#d71921] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                EK</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Emirates</p>
+                                <p class="text-[9px] text-muted mt-0.5">EK-623 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">03:20</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Lahore (LHE)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">3h
+                                    20m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">05:40</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Dubai (DXB)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stay / Layover Block -->
+                    <div
+                        class="bg-orange-50 border-y border-orange-100 py-1.5 px-3 flex justify-center items-center gap-1.5">
+                        <i data-lucide="clock" class="w-3 h-3 text-orange-600"></i>
+                        <span class="text-[9px] font-medium text-orange-800">Change of planes | 3h 10m layover in Dubai
+                            (DXB)</span>
+                    </div>
+
+                    <!-- Flight Segment 2 -->
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#d71921] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                EK</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Emirates</p>
+                                <p class="text-[9px] text-muted mt-0.5">EK-801 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">08:50</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Dubai (DXB)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">3h
+                                    05m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">10:55</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Jeddah (JED)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">5HJD9X</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">1764001601290</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">30KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2.5 CONNECTING (2 STOPS) -->
+            <div id="flights-connecting2" class="flight-group hidden">
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="calendar" class="w-3 h-3 text-muted"></i> 25 May (Saturday)
+                        </div>
+                        <div class="text-muted font-medium text-[8px] uppercase tracking-wider">Departure Flight (2
+                            Stops)</div>
+                    </div>
+
+                    <!-- Flight Segment 1 -->
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#d71921] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                EK</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Emirates</p>
+                                <p class="text-[9px] text-muted mt-0.5">EK-623 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">03:20</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Lahore (LHE)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">3h
+                                    20m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">05:40</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Dubai (DXB)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stay / Layover Block 1 -->
+                    <div
+                        class="bg-orange-50 border-y border-orange-100 py-1.5 px-3 flex justify-center items-center gap-1.5">
+                        <i data-lucide="clock" class="w-3 h-3 text-orange-600"></i>
+                        <span class="text-[9px] font-medium text-orange-800">Change of planes | 3h 10m layover in Dubai
+                            (DXB)</span>
+                    </div>
+
+                    <!-- Flight Segment 2 -->
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#d71921] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                EK</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Emirates</p>
+                                <p class="text-[9px] text-muted mt-0.5">EK-801 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">08:50</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Dubai (DXB)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">2h
+                                    00m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">09:50</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Riyadh (RUH)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stay / Layover Block 2 -->
+                    <div
+                        class="bg-orange-50 border-y border-orange-100 py-1.5 px-3 flex justify-center items-center gap-1.5">
+                        <i data-lucide="clock" class="w-3 h-3 text-orange-600"></i>
+                        <span class="text-[9px] font-medium text-orange-800">Change of planes | 2h 45m layover in Riyadh
+                            (RUH)</span>
+                    </div>
+
+                    <!-- Flight Segment 3 -->
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#0a2240] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                SV</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Saudia</p>
+                                <p class="text-[9px] text-muted mt-0.5">SV-102 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">12:35</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Riyadh (RUH)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">1h
+                                    45m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">14:20</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Jeddah (JED)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">5HJD9X</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">1764001601290</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">30KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. RETURN -->
+            <div id="flights-return" class="flight-group hidden space-y-2">
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="plane-takeoff" class="w-3 h-3 text-action"></i> 20 Apr (Saturday)
+                        </div>
+                        <div class="text-muted font-medium text-[8px] uppercase tracking-wider">Departure Flight</div>
+                    </div>
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-red-600 text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                AA</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Air Arabia</p>
+                                <p class="text-[9px] text-muted mt-0.5">3L-316 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy
+                                        (E)</span></p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">11:00</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Faisalabad (LYP)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">2h
+                                    15m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                                <span class="text-[8px] text-action font-semibold mt-0.5">Non-Stop</span>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">13:15</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Abu Dhabi (AUH)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">10FS24</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">Pending issuance</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">20KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="plane-landing" class="w-3 h-3 text-emerald-600"></i> 30 Apr (Tuesday)
+                        </div>
+                        <div class="text-muted font-medium text-[8px] uppercase tracking-wider">Return Flight</div>
+                    </div>
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-red-600 text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                AA</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Air Arabia</p>
+                                <p class="text-[9px] text-muted mt-0.5">3L-317 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy
+                                        (E)</span></p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">18:00</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Abu Dhabi (AUH)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">2h
+                                    20m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                                <span class="text-[8px] text-action font-semibold mt-0.5">Non-Stop</span>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">22:20</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Faisalabad (LYP)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">10FS24</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">Pending issuance</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">20KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MULTI-CITY -->
+            <div id="flights-multicity" class="flight-group hidden space-y-2">
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="map-pin" class="w-3 h-3 text-action"></i> 15 May (Wednesday)
+                        </div>
+                        <div
+                            class="text-muted font-medium text-[8px] uppercase tracking-wider bg-white px-1 py-0.5 rounded border border-borderline">
+                            Flight 1</div>
+                    </div>
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-green-700 text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                AS</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Airsial</p>
+                                <p class="text-[9px] text-muted mt-0.5">PF-716 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">09:50</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Lahore (LHE)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">3h
+                                    40m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">13:30</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Jeddah (JED)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">3BWSMC</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">6734001601779</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">20KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-borderline rounded-lg overflow-hidden">
+                    <div class="bg-lightbg px-3 py-1.5 border-b border-borderline flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 font-heading font-semibold text-brand text-[11px]">
+                            <i data-lucide="map-pin" class="w-3 h-3 text-action"></i> 22 May (Wednesday)
+                        </div>
+                        <div
+                            class="text-muted font-medium text-[8px] uppercase tracking-wider bg-white px-1 py-0.5 rounded border border-borderline">
+                            Flight 2</div>
+                    </div>
+                    <div class="p-2.5 flex flex-col md:flex-row items-start md:items-center gap-3 bg-white">
+                        <div class="w-full md:w-[25%] flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 bg-[#d71921] text-white rounded flex items-center justify-center font-heading font-bold text-[11px] shrink-0">
+                                EK</div>
+                            <div>
+                                <p class="font-heading font-bold text-brand text-[11px] leading-tight">Emirates</p>
+                                <p class="text-[9px] text-muted mt-0.5">EK-802 <span
+                                        class="bg-gray-100 border border-gray-200 px-1 py-0.5 rounded ml-0.5">Economy</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full flex items-center justify-between">
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">15:00</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Jeddah (JED)</p>
+                            </div>
+                            <div class="w-[40%] flex flex-col items-center justify-center relative px-2">
+                                <span class="text-[8px] text-muted bg-white px-1 relative z-10 font-medium">3h
+                                    00m</span>
+                                <div class="w-full border-t border-dashed border-gray-300 absolute top-[45%]"></div>
+                            </div>
+                            <div class="text-center w-[30%]">
+                                <p class="font-heading font-bold text-lg text-brand leading-none">19:00</p>
+                                <p class="text-[10px] font-medium text-brand mt-1 leading-tight">Dubai (DXB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-slate-50 px-3 py-1.5 border-t border-borderline flex flex-wrap justify-between items-center text-[9px] gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <p><span class="text-muted">Airline PNR:</span> <span
+                                    class="font-heading font-bold text-brand">8DXY2A</span></p>
+                            <p><span class="text-muted">E-Ticket No:</span> <span
+                                    class="font-heading font-bold text-brand">1764001601882</span></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p class="flex items-center gap-1"><i data-lucide="luggage" class="w-3 h-3 text-muted"></i>
+                                <span class="text-muted">Check-in:</span> <span class="font-bold text-brand">30KG</span>
+                            </p>
+                            <p class="flex items-center gap-1"><i data-lucide="briefcase"
+                                    class="w-3 h-3 text-muted"></i> <span class="text-muted">Hand Carry:</span> <span
+                                    class="font-bold text-brand">7KG</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full mb-4 border border-borderline rounded-lg overflow-hidden relative z-10">
+            <table class="w-full text-left">
+                <thead class="bg-lightbg text-brand font-heading text-[9px] uppercase border-b border-borderline">
+                    <tr>
+                        <th class="py-1.5 px-3 font-semibold">Traveller Name</th>
+                        <th class="py-1.5 px-3 font-semibold">Type</th>
+                        <th class="py-1.5 px-3 font-semibold">Ticket Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-borderline text-[10px] bg-white">
+                    <tr>
+                        <td class="py-2 px-3 font-medium text-brand">Mr SHAFQAT HUSSAIN</td>
+                        <td class="py-2 px-3 text-muted">ADULT</td>
+                        <td class="py-2 px-3 text-emerald-600 font-medium">Confirmed</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-2 relative z-10">
+            <h3 class="font-heading font-bold text-action text-[11px] mb-1.5">General Guidelines & Notice</h3>
+            <ul class="space-y-1 text-[9px] md:text-[10px] text-brand">
+                <li class="flex items-start gap-1">
+                    <span class="text-action font-bold mt-0.5">•</span>
+                    <span><strong>Notice:</strong> Refund and Cancellation policies are Governed by the respective Fare
+                        Rules applicable.</span>
+                </li>
+                <li class="flex items-start gap-1">
+                    <span class="text-action font-bold mt-0.5">•</span>
+                    <span>Keep your E-ticket on your phone, along with your original Passport. No printouts needed if
+                        saved. And don't forget to carry your Visa.</span>
+                </li>
+                <li class="flex items-start gap-1">
+                    <span class="text-action font-bold mt-0.5">•</span>
+                    <span>Arrive at the airport at least 4 hours before your flight departure.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div
+            class="mt-3 pt-3 border-t border-borderline flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 relative z-10">
+            <a href="tel:+923000701228"
+                class="flex items-center justify-center gap-1 text-action font-medium text-[10px] hover:underline">
+                <i data-lucide="phone" class="w-3 h-3"></i> +923000701228
+            </a>
+            <a href="https://wa.me/923000701228"
+                class="flex items-center justify-center gap-1 text-action font-medium text-[10px] hover:underline">
+                <i data-lucide="message-circle" class="w-3 h-3 text-emerald-600"></i> +923000701228
+            </a>
+            <a href="mailto:support@saer.pk"
+                class="flex items-center justify-center gap-1 text-action font-medium text-[10px] hover:underline">
+                <i data-lucide="mail" class="w-3 h-3"></i> support@saer.pk
+            </a>
+            <a href="https://saer.pk"
+                class="flex items-center justify-center gap-1 text-action font-medium text-[10px] hover:underline">
+                <i data-lucide="globe" class="w-3 h-3"></i> saer.pk
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function setTripType(type) {
+            const label = document.getElementById('trip-type-label');
+            const refundBadge = document.getElementById('refund-badge');
+
+            if (type === 'oneway') {
+                label.innerText = 'Oneway Trip (Direct)';
+                refundBadge.className = 'bg-[#f0fdf4] border border-[#86efac] text-[#166534] px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]';
+                refundBadge.innerHTML = '<i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Refundable';
+            }
+            if (type === 'connecting') {
+                label.innerText = 'Oneway Trip (1 Stop)';
+                refundBadge.className = 'bg-red-50 border border-red-200 text-red-700 px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]';
+                refundBadge.innerHTML = '<i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Non-Refundable';
+            }
+            if (type === 'connecting2') {
+                label.innerText = 'Oneway Trip (2 Stops)';
+                refundBadge.className = 'bg-red-50 border border-red-200 text-red-700 px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]';
+                refundBadge.innerHTML = '<i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Non-Refundable';
+            }
+            if (type === 'return') {
+                label.innerText = 'Return Trip';
+                refundBadge.className = 'bg-[#f0fdf4] border border-[#86efac] text-[#166534] px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]';
+                refundBadge.innerHTML = '<i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Refundable';
+            }
+            if (type === 'multicity') {
+                label.innerText = 'Multi-City Trip';
+                refundBadge.className = 'bg-red-50 border border-red-200 text-red-700 px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 mb-[1px]';
+                refundBadge.innerHTML = '<i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Non-Refundable';
+            }
+
+            document.getElementById('flights-oneway').classList.add('hidden');
+            document.getElementById('flights-oneway').classList.remove('block');
+
+            document.getElementById('flights-connecting').classList.add('hidden');
+            document.getElementById('flights-connecting').classList.remove('block');
+
+            document.getElementById('flights-connecting2').classList.add('hidden');
+            document.getElementById('flights-connecting2').classList.remove('block');
+
+            document.getElementById('flights-return').classList.add('hidden');
+            document.getElementById('flights-return').classList.remove('block');
+
+            document.getElementById('flights-multicity').classList.add('hidden');
+            document.getElementById('flights-multicity').classList.remove('block');
+
+            document.getElementById('flights-' + type).classList.remove('hidden');
+            document.getElementById('flights-' + type).classList.add('block');
+
+            const btns = ['oneway', 'connecting', 'connecting2', 'return', 'multicity'];
+            btns.forEach(b => {
+                const el = document.getElementById('btn-' + b);
+                if (b === type) {
+                    el.classList.add('bg-action', 'text-white');
+                    el.classList.remove('bg-gray-100', 'text-brand', 'hover:bg-gray-200');
+                } else {
+                    el.classList.remove('bg-action', 'text-white');
+                    el.classList.add('bg-gray-100', 'text-brand', 'hover:bg-gray-200');
+                }
+            });
+
+            lucide.createIcons();
+        }
+    </script>
+</body>
+
+</html>
